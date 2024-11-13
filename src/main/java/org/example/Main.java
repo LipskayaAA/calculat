@@ -14,37 +14,62 @@ public class Main {
         System.out.println("Введите числа: ");
         Scanner scanner = new Scanner(System.in);
         String input = scanner.nextLine();
+        scanner.close();
         return input;
     }
 
-    public static String calc(String inp) throws MyException {
-        String[] s = inp.split(" ");
-        if (s.length < 3) {
-            throw new MyException("т.к. строка не является математической операцией");
-        } else if (s.length > 3) {
-            throw new MyException("т.к. формат математической операции не удовлетворяет заданию - два операнда и один оператор (+, -, /, *)");
+    public static String[] isValid(String input) {
+        try {
+            String[] arr = input.split(" ");
+
+            if (arr.length != 3) {
+                System.out.println("Не валидные данные");
+                return null;
+            }
+
+            int firstNum = Integer.parseInt(arr[0]);
+            int secondNum = Integer.parseInt(arr[2]);
+            String sign = arr[1];
+
+            return new String[]{String.valueOf(firstNum), sign, String.valueOf(secondNum)};
+
+
+        } catch (NumberFormatException e) {
+            System.out.println("Это не цифры!");
+            return null;
         }
 
-        int result;
-        int first = Integer.parseInt(s[0]);
-        int second = Integer.parseInt(s[2]);
-        String sign = s[1];
+    }
 
-        switch (sign) {
-            case "+":
-                result = first + second;
-                return Integer.toString(result);
-            case "-":
-                result = first - second;
-                return Integer.toString(result);
-            case "*":
-                result = first * second;
-                return Integer.toString(result);
-            case "/":
-                result = first / second;
-                return Integer.toString(result);
+
+
+    public static String calc(String input) throws MyException {
+
+        String[] validStrings = isValid(input);
+        if (validStrings == null) {
+            throw new MyException("Это не цифры!");
         }
-        return null;
+
+        int firstNum = Integer.parseInt(validStrings[0]);
+        int secondNum = Integer.parseInt(validStrings[2]);
+        String sign = validStrings[1];
+
+        if (firstNum > 10 || secondNum > 10 || firstNum < 0 || secondNum < 0) {
+            throw new MyException("Не корректные данные!");
+        }
+
+        return switch (sign) {
+            case "+" -> Integer.toString(firstNum + secondNum);
+            case "-" -> Integer.toString(firstNum - secondNum);
+            case "*" -> Integer.toString(firstNum * secondNum);
+            case "/" -> {
+                if (secondNum == 0) {
+                    throw new MyException("Деление на ноль");
+                }
+                yield Integer.toString(firstNum / secondNum);
+            }
+            default -> throw new MyException("Неизвестные операторы");
+        };
 
     }
 }
